@@ -1,10 +1,10 @@
 # SwiftGuardian
 
-The GitHub versions does not contain API keys and configuration to work out of the box. For a preconfigured version, please download from https://swiftguardian.theoleecj.net/dl/13aef2.zip.
-
 ## Watch the video:
 
 [![](https://img.youtube.com/vi/i4FAZyYRes8/maxresdefault.jpg)](https://youtu.be/i4FAZyYRes8)
+
+The GitHub version does not contain API keys and configuration to work out of the box. For a preconfigured version, please download from https://swiftguardian.theoleecj.net/dl/13aef2.zip.
 
 ## Inspiration
 
@@ -69,3 +69,4 @@ Use the given tools correctly - prompt engineering techniques and overall LLM or
 - Allow IT administrators to create custom policies for enterprise data protection with PromptGuard, tailoring the LLM prompt scanning to fit each organisation's individual needs
 
 - Release on Chrome Extension Store?
+

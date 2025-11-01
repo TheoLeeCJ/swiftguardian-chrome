@@ -2,21 +2,40 @@ let availabilityState = null;
 let downloadProgress = 0;
 const listeners = new Set();
 
+function notifyListeners() {
+  listeners.forEach(cb => cb(availabilityState, downloadProgress));
+}
+
 // Check availability and cache result
 export async function checkAvailability() {
   try {
     if (!self.LanguageModel) {
       availabilityState = 'unavailable';
+      await chrome.storage.local.set({ llmAvailability: availabilityState });
+      notifyListeners();
       return availabilityState;
     }
-    availabilityState = await self.LanguageModel.availability();
-    console.log("a2", availabilityState);
+
+    let state = await self.LanguageModel.availability();
+
+    // New: re-check after 3s if reported as "downloadable"
+    if (state === 'downloadable') {
+      await new Promise(r => setTimeout(r, 3000));
+      const second = await self.LanguageModel.availability();
+      if (second && second !== state) {
+        state = second;
+      }
+    }
+
+    availabilityState = state;
     await chrome.storage.local.set({ llmAvailability: availabilityState });
     notifyListeners();
     return availabilityState;
   } catch (e) {
     console.error('[LLM] Availability check failed:', e);
     availabilityState = 'unavailable';
+    await chrome.storage.local.set({ llmAvailability: availabilityState });
+    notifyListeners();
     return availabilityState;
   }
 }
@@ -27,16 +46,10 @@ export function onAvailabilityChange(callback) {
   return () => listeners.delete(callback);
 }
 
-function notifyListeners() {
-  listeners.forEach(cb => cb(availabilityState, downloadProgress));
-}
-
 // Wrapper for creating sessions with availability check
 export async function createSession(options = {}) {
   // Check availability if not cached
   await checkAvailability();
-
-  console.log(availabilityState);
 
   if (availabilityState === 'unavailable') {
     throw new Error('Gemini Nano is unavailable on this device');
@@ -49,9 +62,10 @@ export async function createSession(options = {}) {
       ...options,
       monitor(m) {
         m.addEventListener('downloadprogress', (e) => {
-          downloadProgress = Math.round(e.loaded * 100);
-          console.log(`[LLM] Downloaded ${downloadProgress}%`);
-          chrome.storage.local.set({ llmDownloadProgress: downloadProgress });
+          // New: mark as downloading and publish progress
+          availabilityState = 'downloading';
+          downloadProgress = Math.max(0, Math.min(100, Math.round((e.loaded || 0) * 100)));
+          chrome.storage.local.set({ llmAvailability: availabilityState, llmDownloadProgress: downloadProgress });
           notifyListeners();
         });
         if (options.monitor) options.monitor(m);
@@ -63,6 +77,7 @@ export async function createSession(options = {}) {
   }
 
   if (availabilityState === 'downloading') {
+    // Keep current behavior (error) to avoid double triggers
     throw new Error('Model is currently downloading. Please wait.');
   }
 

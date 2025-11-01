@@ -129,7 +129,18 @@ async function initializePopup() {
   }
 
   if (llmAvailability === 'downloadable') {
+    // Show download UI, then re-check after 3s in case state flipped quickly
     showLLMDownload();
+    setTimeout(async () => {
+      const { llmAvailability: later } = await chrome.storage.local.get(['llmAvailability']);
+      if (later === 'available') {
+        // Re-init to show main content
+        initializePopup();
+      } else if (later === 'downloading') {
+        showLLMDownloading();
+      }
+      // else remain on download UI
+    }, 3000);
     return;
   }
 
@@ -325,8 +336,9 @@ function showLLMDownloading() {
 }
 
 function updateDownloadProgress(progress) {
-  llmProgressBar.style.width = `${progress}%`;
-  llmProgressText.textContent = `${progress}%`;
+  const pct = Math.max(0, Math.min(100, Math.round(progress)));
+  llmProgressBar.style.width = `${pct}%`;
+  llmProgressText.textContent = `${pct}%`;
 }
 
 async function showVerdict(verdict, reasoning) {
@@ -560,6 +572,8 @@ chrome.runtime.onMessage.addListener(async function (request) {
       initializePopup();
     }
   } else if (request.action === 'llm-download-progress') {
+    // Ensure progress view is visible even if availability event arrived late
+    showLLMDownloading();
     updateDownloadProgress(request.progress);
   }
 });
@@ -572,6 +586,23 @@ if (reanalyzeBtn) {
     chrome.runtime.sendMessage({ action: 'reanalyze-current-page' }, (res) => {
       // No-op; background will drive updates via messages
       // If needed, we could handle errors here
+    });
+  });
+}
+
+// New: wire up Download Model button
+if (llmDownloadBtn) {
+  llmDownloadBtn.addEventListener('click', () => {
+    // Switch UI to progress immediately
+    showLLMDownloading();
+    updateDownloadProgress(0);
+    // Trigger download in background
+    chrome.runtime.sendMessage({ action: 'start-llm-download' }, (res) => {
+      if (!res || res.ok !== true) {
+        // If failed to trigger, return to download screen
+        console.warn('[LLM] Failed to start model download:', res?.error);
+        showLLMDownload();
+      }
     });
   });
 }

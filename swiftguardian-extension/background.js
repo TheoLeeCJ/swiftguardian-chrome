@@ -12,7 +12,8 @@ onAvailabilityChange((availability, progress) => {
     action: 'llm-availability-updated', 
     availability 
   });
-  if (availability === 'downloading') {
+  // Changed: always forward progress if present to keep UI in sync
+  if (typeof progress === 'number' && progress > 0 && progress <= 100) {
     chrome.runtime.sendMessage({ 
       action: 'llm-download-progress', 
       progress 

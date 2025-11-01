@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SwiftGuardian Settings</title>
+    <script src="lib/tailwindcss.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+    <style>
+      body {
+        background-color: #f8fafc; /* slate-50 */
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    </style>
+  </head>
+  <body class="text-slate-800 w-96">
+    <div class="p-4">
+      <header class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <a href="popup.html" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200" title="Back">
+            <span class="material-symbols-outlined">arrow_back</span>
+          </a>
+          <span class="material-symbols-outlined text-blue-600">shield</span>
+          <h1 class="text-lg font-bold text-slate-900">SwiftGuardian Settings</h1>
+        </div>
+        <!-- Right side kept empty to mirror spacing in popup -->
+        <span class="inline-block w-6 h-6"></span>
+      </header>
+
+      <div class="space-y-2">
+        <!-- LLM Monitoring Settings -->
+        <section class="bg-white p-4 rounded-lg shadow">
+          <h2 class="text-lg font-semibold mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined">security</span>
+            LLM Prompt Monitoring
+          </h2>
+          <label for="monitoringMode" class="block text-sm font-medium text-slate-700 mb-2">Protection mode for chatbot sites</label>
+          <select id="monitoringMode" class="w-full p-2 border border-slate-300 rounded-md">
+            <option value="none">None - No monitoring</option>
+            <option value="promptguard" selected>PromptGuard - Prevent personal data leaks</option>
+            <option value="familycenter">Family Center - Child protection</option>
+          </select>
+          <p class="text-xs text-slate-500 mt-2">
+            <strong>PromptGuard:</strong> Blocks messages containing sensitive data before sending.<br>
+            <strong>Family Center:</strong> Child protection mode.
+          </p>
+        </section>
+
+        <!-- Family Center Section -->
+        <section class="bg-white p-4 rounded-lg shadow">
+          <h2 class="text-lg font-semibold mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined">family_restroom</span>
+            Family Center
+          </h2>
+          
+          <!-- Not joined state -->
+          <div id="familyNotJoined" class="hidden">
+            <p class="text-sm text-slate-600 mb-3">
+              Join your family to enable parental monitoring and protection features.
+            </p>
+            <button id="joinFamilyBtn" class="w-full bg-purple-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-purple-700 flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined">add</span>
+              Join Family by Pairing Code
+            </button>
+          </div>
+
+          <!-- Joined state -->
+          <div id="familyJoined" class="hidden">
+            <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="material-symbols-outlined text-purple-600">check_circle</span>
+                <span class="font-semibold text-purple-900" id="familyNameDisplay"></span>
+              </div>
+              <p class="text-sm text-purple-700">keeping you safe</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Inference Preference -->
+        <section class="bg-white p-4 rounded-lg shadow">
+          <h2 class="text-lg font-semibold mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined">cloud</span>
+            On-device / cloud inference
+          </h2>
+          <label for="inferenceMode" class="block text-sm font-medium text-slate-700 mb-2">Preference</label>
+          <select id="inferenceMode" class="w-full p-2 border border-slate-300 rounded-md">
+            <option value="on-device">Always use on-device inference</option>
+            <option value="allow-cloud">Allow cloud inference</option>
+            <option value="cloud">Always use cloud inference</option>
+          </select>
+        </section>
+
+        <!-- Language Settings -->
+        <section class="bg-white p-4 rounded-lg shadow">
+          <h2 class="text-lg font-semibold mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined">translate</span>
+            Language
+          </h2>
+          <label for="lang" class="block text-sm font-medium text-slate-700 mb-2">Translate reasoning to</label>
+          <select id="lang" class="w-full p-2 border border-slate-300 rounded-md">
+            <option value="bn">Bengali</option>
+            <option value="en" selected>English</option>
+            <option value="de">German</option>
+            <option value="fr">French</option>
+            <option value="hi">Hindi</option>
+            <option value="ja">Japanese</option>
+            <option value="zh">Mandarin Chinese (Simplified)</option>
+            <option value="pt">Portuguese</option>
+            <option value="ru">Russian</option>
+            <option value="es">Spanish</option>
+            <option value="zh-Hant">Taiwanese Mandarin (Traditional)</option>
+            <option value="tr">Turkish</option>
+            <option value="vi">Vietnamese</option>
+          </select>
+        </section>
+
+        <!-- Scam Detection -->
+        <section class="bg-white p-4 rounded-lg shadow">
+          <h2 class="text-lg font-semibold mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined">gpp_bad</span>
+            Scam Detection
+          </h2>
+          <label class="flex items-center gap-2">
+            <input id="summarizeScamDetections" type="checkbox" class="h-4 w-4">
+            <span class="text-sm text-slate-800">Summarise scam detections</span>
+          </label>
+          <p class="text-xs text-slate-500 mt-2">
+            When enabled, SwiftGuardian generates a short on-device summary of scam reasoning using the Summarizer API.
+          </p>
+        </section>
+
+        <!-- Debug Tools -->
+        <section class="bg-white p-4 rounded-lg shadow">
+          <h2 class="text-lg font-semibold mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined">bug_report</span>
+            Debug Tools
+          </h2>
+          <div class="space-y-2">
+            <button id="debugBtn" class="w-full bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-md hover:bg-slate-300 flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined">info</span>
+              View Debug Info
+            </button>
+            <button id="debugLLMBtn" class="w-full bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-md hover:bg-slate-300 flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined">list_alt</span>
+              View LLM Responses
+            </button>
+            <button id="debugFamilyCenterBtn" class="w-full bg-purple-200 text-purple-800 font-semibold py-2 px-4 rounded-md hover:bg-purple-300 flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined">family_restroom</span>
+              View Family Center Logs
+            </button>
+            <button id="clearFamilyBtn" class="w-full bg-orange-200 text-orange-800 font-semibold py-2 px-4 rounded-md hover:bg-orange-300 flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined">group_remove</span>
+              Clear Family Data
+            </button>
+            <button id="clearHistoryBtn" class="w-full bg-red-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-700 flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined">delete_forever</span>
+              Clear All History
+            </button>
+          </div>
+        </section>
+
+        <!-- Debug Display Area -->
+        <section id="debugDisplay" class="hidden bg-white p-4 rounded-lg shadow">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-semibold">Debug Information</h2>
+            <button id="closeDebugBtn" class="text-slate-500 hover:text-slate-700">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div id="debugContent" class="text-xs font-mono bg-slate-100 p-3 rounded-md overflow-auto max-h-96">
+            <p>Loading...</p>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script type="module" src="settings.js"></script>
+  </body>
+</html>

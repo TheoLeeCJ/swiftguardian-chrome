@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwiftGuardian Family Center</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+  <div id="app">
+
+    <div class="min-h-screen p-4">
+      <!-- Header -->
+      <header v-if="isLoggedIn" class="bg-white shadow-lg rounded-2xl p-6 mb-6 max-w-6xl mx-auto">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-4">
+            <img src="icon128.png" alt="SwiftGuardian Logo" class="w-14 h-14 rounded-xl bg-white" />
+            <div>
+              <h1 class="text-3xl font-bold text-indigo-600 flex items-center gap-2">
+                SwiftGuardian Family Center
+              </h1>
+              <p class="text-gray-600 mt-1">Welcome, {{ userName || 'Guest' }}</p>
+            </div>
+          </div>
+          <button @click="handleLogout"
+            class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition-colors">
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <!-- Login/Signup View -->
+      <div v-if="currentView === 'login'" class="max-w-md mx-auto mt-20">
+        <div class="bg-white shadow-2xl rounded-3xl p-8">
+          <div class="text-center mb-8">
+            <div class="bg-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                </path>
+              </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-800">Family Center</h2>
+            <p class="text-gray-500 mt-2">Keep your family safe together</p>
+          </div>
+
+          <div class="space-y-4">
+            <button @click="handleGoogleSignIn"
+              class="w-full bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-300 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-3">
+              <svg class="w-5 h-5" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              </svg>
+              Sign in with Google
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Family View -->
+      <div v-if="currentView === 'family'" class="max-w-6xl mx-auto">
+        <!-- Navigation Tabs -->
+        <div class="bg-white shadow-xl rounded-2xl p-4 mb-6">
+          <div class="flex gap-2">
+            <button @click="currentTab = 'members'" 
+              :class="currentTab === 'members' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+              class="px-6 py-2 rounded-lg font-semibold transition-colors">
+              Members
+            </button>
+            <button @click="currentTab = 'events'" 
+              :class="currentTab === 'events' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+              class="px-6 py-2 rounded-lg font-semibold transition-colors">
+              Activity Feed
+            </button>
+          </div>
+        </div>
+
+        <!-- Members Tab -->
+        <div v-if="currentTab === 'members'" class="bg-white shadow-xl rounded-2xl p-8">
+          <div class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-bold text-gray-800">My Family</h2>
+            <button @click="generatePairingKey"
+              class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              Add Member
+            </button>
+          </div>
+
+          <!-- Pairing Key Display -->
+          <div v-if="pairingKey"
+            class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6 mb-8">
+            <div class="text-center">
+              <p class="text-gray-700 font-semibold mb-3">Share this pairing key with your family member:</p>
+              <div class="bg-white rounded-lg p-4 mb-3 inline-block">
+                <p class="text-4xl font-bold text-green-600 tracking-widest">{{ pairingKey }}</p>
+              </div>
+              <p class="text-sm text-gray-600">⏱️ Expires in: <span class="font-semibold text-red-600">{{ timeRemaining
+                  }}</span></p>
+            </div>
+          </div>
+
+          <!-- Family Members -->
+          <div v-if="familyMembers.length > 0">
+            <h3 class="text-xl font-semibold text-gray-700 mb-4">Family Members</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div v-for="member in familyMembers" :key="member.id"
+                class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg p-5 border border-indigo-200">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="bg-indigo-500 w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                    {{ member.name ? member.name.charAt(0).toUpperCase() : '?' }}
+                  </div>
+                  <div>
+                    <p class="font-semibold text-gray-800">{{ member.name || 'Anonymous' }}</p>
+                    <span class="inline-block mt-1 px-3 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1"
+                      :class="member.role === 'owner' ? 'bg-green-200 text-green-800' : 'bg-blue-200 text-blue-800'">
+                      <span class="material-symbols-outlined text-base align-middle">
+                        {{ member.role === 'owner' ? 'star' : 'person' }}
+                      </span>
+                      {{ member.role === 'owner' ? 'Owner' : 'Member' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- No Family Members -->
+          <div v-else class="text-center py-12 text-gray-500">
+            <svg class="w-24 h-24 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+              </path>
+            </svg>
+            <p class="text-lg">No family members yet</p>
+            <p class="text-sm">Click "Add Member" to invite someone</p>
+          </div>
+        </div>
+
+        <!-- Events/Activity Feed Tab -->
+        <div v-if="currentTab === 'events'" class="bg-white shadow-xl rounded-2xl p-8">
+          <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Activity Feed</h2>
+            
+            <!-- Filter Bar -->
+            <div class="flex gap-3 items-center flex-wrap">
+              <button @click="selectedMemberFilter = null"
+                :class="selectedMemberFilter === null ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                class="px-4 py-2 rounded-lg font-semibold text-sm transition-colors">
+                All Members
+              </button>
+              <button v-for="member in familyMembers.filter(m => m.role === 'member')" 
+                :key="member.id"
+                @click="selectedMemberFilter = member.id"
+                :class="selectedMemberFilter === member.id ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                class="px-4 py-2 rounded-lg font-semibold text-sm transition-colors">
+                {{ member.name }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Events List -->
+          <div v-if="filteredEvents.length > 0" class="space-y-4">
+            <div v-for="event in filteredEvents" :key="event.id"
+              class="bg-amber-50 border-amber-300 border-2 rounded-lg p-5">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="bg-indigo-500 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
+                    {{ getMemberName(event.src).charAt(0).toUpperCase() }}
+                  </div>
+                  <div>
+                    <p class="font-semibold text-gray-800">{{ getEventTitle(event) }}</p>
+                    <p class="text-xs text-gray-500">{{ formatTimestamp(event.timestamp) }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span v-if="event.platform" 
+                    class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                    {{ event.platform }}
+                  </span>
+                  <span class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-200 text-amber-800 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-base align-middle">flag</span>
+                    Flagged
+                  </span>
+                </div>
+              </div>
+
+              <!-- Message Preview / Instagram URL -->
+              <div v-if="event.type !== 'social_media_flagged'" class="bg-white rounded-lg p-3 mb-3">
+                <p class="text-xs font-semibold text-gray-600 mb-1">Message:</p>
+                <p class="text-sm text-gray-800">{{ event.messagePreview || 'No preview available' }}</p>
+              </div>
+
+              <!-- Instagram Post Link -->
+              <div v-if="event.type === 'social_media_flagged' && event.url" class="bg-white rounded-lg p-3 mb-3">
+                <p class="text-xs font-semibold text-gray-600 mb-1">Instagram Post:</p>
+                <a :href="event.url" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   class="text-sm text-blue-600 hover:text-blue-800 underline break-all">
+                  {{ event.url }}
+                </a>
+              </div>
+
+              <!-- Analysis -->
+              <div v-if="event.analysis || event.summary" class="bg-white rounded-lg p-3">
+                <p class="text-xs font-semibold text-gray-600 mb-1">Analysis:</p>
+                <p class="text-sm text-gray-700">{{ event.analysis || event.summary }}</p>
+              </div>
+
+              <!-- Expand for reasoning -->
+              <button v-if="event.reasoning" @click="toggleEventExpansion(event.id)"
+                class="mt-3 text-xs text-indigo-600 hover:text-indigo-800 font-semibold">
+                {{ expandedEvents.has(event.id) ? '▼ Hide Details' : '▶ Show Details' }}
+              </button>
+              <div v-if="expandedEvents.has(event.id) && event.reasoning" 
+                class="mt-3 bg-gray-50 rounded-lg p-3">
+                <p class="text-xs font-semibold text-gray-600 mb-1">Detailed Reasoning:</p>
+                <pre class="text-xs text-gray-700 whitespace-pre-wrap">{{ event.reasoning }}</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- No Events -->
+          <div v-else class="text-center py-12 text-gray-500">
+            <svg class="w-24 h-24 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+              </path>
+            </svg>
+            <p class="text-lg">No activity yet</p>
+            <p class="text-sm">Events will appear here when family members use monitored platforms</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc, doc, getDoc, setDoc, deleteDoc, onSnapshot, serverTimestamp, Timestamp, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      // FILL IN YOUR CONFIG
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          user: null,
+          userName: '',
+          isLoggedIn: false,
+          currentView: 'login',
+          selectedFamily: null,
+          familyMembers: [],
+          pairingKey: '',
+          pairingKeyDocId: null,
+          pairingKeyExpiry: null,
+          pairingKeyInput: '',
+          memberName: '',
+          unsubscribeFamily: null,
+          unsubscribeMembers: null,
+          unsubscribePairingCode: null,
+          timeRemaining: '',
+          timerInterval: null,
+          currentTab: 'members',
+          events: [],
+          selectedMemberFilter: null,
+          unsubscribeEvents: null,
+          expandedEvents: new Set()
+        }
+      },
+      computed: {
+        filteredEvents() {
+          if (this.selectedMemberFilter === null) {
+            return this.events;
+          }
+          return this.events.filter(e => e.src === this.selectedMemberFilter);
+        }
+      },
+      methods: {
+        async handleGoogleSignIn() {
+          try {
+            const result = await signInWithPopup(auth, googleProvider);
+            this.userName = result.user.displayName || result.user.email;
+            // loadOrCreateFamily will be called by onAuthStateChanged
+          } catch (error) {
+            console.error('Google sign-in error:', error);
+            alert('Failed to sign in with Google');
+          }
+        },
+
+        async handleLogout() {
+          try {
+            this.cleanupListeners();
+            await signOut(auth);
+            this.currentView = 'login';
+            this.selectedFamily = null;
+            this.familyMembers = [];
+            this.pairingKey = '';
+          } catch (error) {
+            console.error('Logout error:', error);
+          }
+        },
+
+        cleanupListeners() {
+          if (this.unsubscribeFamily) {
+            this.unsubscribeFamily();
+            this.unsubscribeFamily = null;
+          }
+          if (this.unsubscribeMembers) {
+            this.unsubscribeMembers();
+            this.unsubscribeMembers = null;
+          }
+          if (this.unsubscribePairingCode) {
+            this.unsubscribePairingCode();
+            this.unsubscribePairingCode = null;
+          }
+          if (this.unsubscribeEvents) {
+            this.unsubscribeEvents();
+            this.unsubscribeEvents = null;
+          }
+          if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+          }
+        },
+
+        async loadOrCreateFamily() {
+          try {
+            // Query for families where user is the owner
+            const q = query(collection(db, 'families'), where('ownerId', '==', this.user.uid));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+              // Create new family with ownerId
+              const familyRef = await addDoc(collection(db, 'families'), {
+                ownerId: this.user.uid,
+                ownerName: this.userName,
+                ownerEmail: this.user.email || '',
+                createdAt: serverTimestamp()
+              });
+
+              // Add owner as a member in subcollection
+              await setDoc(doc(db, 'families', familyRef.id, 'members', this.user.uid), {
+                role: 'owner',
+                name: this.userName,
+                email: this.user.email || '',
+                joinedAt: serverTimestamp()
+              });
+
+              this.listenToFamily(familyRef.id);
+            } else {
+              // Use existing family
+              const familyDoc = querySnapshot.docs[0];
+              this.listenToFamily(familyDoc.id);
+            }
+
+            this.currentView = 'family';
+          } catch (error) {
+            console.error('Error loading family:', error);
+            alert('Failed to load family data');
+          }
+        },
+
+        listenToFamily(familyId) {
+          this.cleanupListeners();
+
+          // Listen to family document
+          this.unsubscribeFamily = onSnapshot(doc(db, 'families', familyId), (doc) => {
+            if (doc.exists()) {
+              this.selectedFamily = { id: doc.id, ...doc.data() };
+            }
+          });
+
+          // Listen to members subcollection
+          this.unsubscribeMembers = onSnapshot(
+            collection(db, 'families', familyId, 'members'),
+            (snapshot) => {
+              this.familyMembers = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+              }));
+            }
+          );
+
+          // Listen to events subcollection (most recent 100)
+          this.unsubscribeEvents = onSnapshot(
+            query(
+              collection(db, 'families', familyId, 'events'),
+              orderBy('timestamp', 'desc'),
+              limit(100)
+            ),
+            (snapshot) => {
+              this.events = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+              }));
+            }
+          );
+        },
+
+        getMemberName(memberId) {
+          const member = this.familyMembers.find(m => m.id === memberId);
+          return member ? member.name : 'Unknown Member';
+        },
+
+        getEventTitle(event) {
+          const memberName = this.getMemberName(event.src);
+          
+          if (event.type === 'social_media_flagged') {
+            const platform = event.platform || 'social media';
+            return `${memberName} saw a concerning ${platform} post`;
+          } else if (event.type === 'distress_detected') {
+            const platformMap = {
+              'chatgpt': 'ChatGPT',
+              'google-ai': 'Google AI',
+              'claude': 'Claude'
+            };
+            const platformName = platformMap[event.platform] || event.platform || 'chatbot';
+            return `${memberName} sent to ${platformName}`;
+          }
+          
+          return `${memberName} activity`;
+        },
+
+        formatTimestamp(timestamp) {
+          if (!timestamp) return 'Just now';
+          
+          // Handle Firestore Timestamp
+          const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+          const now = new Date();
+          const diff = now - date;
+          
+          // Less than 1 minute
+          if (diff < 60000) {
+            return 'Just now';
+          }
+          // Less than 1 hour
+          if (diff < 3600000) {
+            const mins = Math.floor(diff / 60000);
+            return `${mins} minute${mins > 1 ? 's' : ''} ago`;
+          }
+          // Less than 24 hours
+          if (diff < 86400000) {
+            const hours = Math.floor(diff / 3600000);
+            return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+          }
+          // Less than 7 days
+          if (diff < 604800000) {
+            const days = Math.floor(diff / 86400000);
+            return `${days} day${days > 1 ? 's' : ''} ago`;
+          }
+          // Full date
+          return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        },
+
+        toggleEventExpansion(eventId) {
+          if (this.expandedEvents.has(eventId)) {
+            this.expandedEvents.delete(eventId);
+          } else {
+            this.expandedEvents.add(eventId);
+          }
+          // Force reactivity
+          this.expandedEvents = new Set(this.expandedEvents);
+        },
+
+        async generatePairingKey() {
+          if (!this.selectedFamily) return;
+
+          const code = Math.floor(10000000 + Math.random() * 90000000).toString();
+          const now = Date.now();
+
+          try {
+            // Create pairing code document with CODE as the document ID
+            await setDoc(doc(db, 'pairingCodes', code), {
+              familyId: this.selectedFamily.id,
+              familyName: this.selectedFamily.ownerName || 'Family',
+              owner: this.user.uid,
+              createdTime: now
+            });
+
+            this.pairingKey = code;
+            this.pairingKeyDocId = code; // Document ID is the code itself
+            this.pairingKeyExpiry = now + 600000; // 10 minutes
+
+            this.listenToPairingCode(code);
+            this.startTimer();
+          } catch (error) {
+            console.error('Error generating pairing key:', error);
+            alert('Failed to generate pairing key');
+          }
+        },
+
+        listenToPairingCode(pairingDocId) {
+          if (this.unsubscribePairingCode) {
+            this.unsubscribePairingCode();
+          }
+
+          const currentMemberCount = this.familyMembers.length;
+
+          this.unsubscribePairingCode = onSnapshot(
+            collection(db, 'families', this.selectedFamily.id, 'members'),
+            async (snapshot) => {
+              const newMemberCount = snapshot.docs.length;
+              
+              // If a new member was added, delete the pairing code
+              if (newMemberCount > currentMemberCount) {
+                try {
+                  await deleteDoc(doc(db, 'pairingCodes', pairingDocId));
+                  this.pairingKey = '';
+                  this.pairingKeyDocId = null;
+                  if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                  }
+                  if (this.unsubscribePairingCode) {
+                    this.unsubscribePairingCode();
+                    this.unsubscribePairingCode = null;
+                  }
+                } catch (error) {
+                  console.error('Error deleting pairing code:', error);
+                }
+              }
+            }
+          );
+        },
+
+        startTimer() {
+          if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+          }
+
+          this.timerInterval = setInterval(async () => {
+            const now = Date.now();
+            const remaining = this.pairingKeyExpiry - now;
+
+            if (remaining <= 0) {
+              // Delete expired pairing code
+              if (this.pairingKeyDocId) {
+                try {
+                  await deleteDoc(doc(db, 'pairingCodes', this.pairingKeyDocId));
+                } catch (error) {
+                  console.error('Error deleting expired pairing code:', error);
+                }
+              }
+              this.pairingKey = '';
+              this.pairingKeyDocId = null;
+              this.timeRemaining = '';
+              clearInterval(this.timerInterval);
+              if (this.unsubscribePairingCode) {
+                this.unsubscribePairingCode();
+                this.unsubscribePairingCode = null;
+              }
+            } else {
+              const minutes = Math.floor(remaining / 60000);
+              const seconds = Math.floor((remaining % 60000) / 1000);
+              this.timeRemaining = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+          }, 1000);
+        },
+
+        async joinWithPairingKey() {
+          if (!this.pairingKeyInput.trim() || this.pairingKeyInput.length !== 8) {
+            alert('Please enter a valid 8-digit pairing key');
+            return;
+          }
+
+          if (!this.memberName.trim()) {
+            alert('Please enter your name first');
+            return;
+          }
+
+          try {
+            // Find pairing code document
+            const q = query(collection(db, 'pairingCodes'), where('code', '==', this.pairingKeyInput));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+              alert('Invalid or expired pairing key');
+              return;
+            }
+
+            const pairingDoc = querySnapshot.docs[0];
+            const pairingData = pairingDoc.data();
+
+            // Check if key is still valid (within 10 minutes)
+            const now = Date.now();
+            if (now - pairingData.createdTime > 600000) {
+              alert('Pairing key has expired');
+              return;
+            }
+
+            // Sign in anonymously
+            const result = await signInAnonymously(auth);
+
+            // Add user to members subcollection
+            await setDoc(doc(db, 'families', pairingData.familyId, 'members', result.user.uid), {
+              role: 'member',
+              name: this.memberName,
+              joinedAt: serverTimestamp()
+            });
+
+            this.userName = this.memberName;
+            this.currentView = 'family';
+            this.pairingKeyInput = '';
+            this.memberName = '';
+            
+            alert('Successfully joined family!');
+          } catch (error) {
+            console.error('Error joining family:', error);
+            alert('Failed to join family: ' + error.message);
+          }
+        }
+      },
+      mounted() {
+        onAuthStateChanged(auth, async (user) => {
+          if (user) {
+            this.user = user;
+            this.isLoggedIn = true;
+
+            // If Google user (not anonymous), load/create family
+            if (!user.isAnonymous && this.currentView === 'login') {
+              this.userName = user.displayName || user.email;
+              await this.loadOrCreateFamily();
+            }
+          } else {
+            this.user = null;
+            this.isLoggedIn = false;
+            this.currentView = 'login';
+          }
+        });
+      },
+      beforeUnmount() {
+        this.cleanupListeners();
+      }
+    }).mount('#app');
+  </script>
+</body>
+
+</html>

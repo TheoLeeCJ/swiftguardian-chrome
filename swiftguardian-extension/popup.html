@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>SwiftGuardian</title>
+  <script src="lib/tailwindcss.js"></script>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <style>
+    body {
+      background-color: #f8fafc;
+      /* slate-50 */
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+
+<body class="text-slate-800 w-96">
+  <!-- Main View -->
+  <div id="mainView" class="p-4">
+    <header class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-blue-600">shield</span>
+        <h1 class="text-lg font-bold text-slate-900">SwiftGuardian</h1>
+      </div>
+      <div class="flex items-center gap-1">
+        <button id="reanalyzeBtn" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200"
+          title="Re-analyze this page">
+          <span class="material-symbols-outlined">refresh</span>
+        </button>
+        <a href="settings.html" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200">
+          <span class="material-symbols-outlined">settings</span>
+        </a>
+      </div>
+    </header>
+
+    <div id="result" class="space-y-3">
+      <div id="loading" class="flex flex-col items-center justify-center h-48 text-slate-500">
+        <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+          viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+          </path>
+        </svg>
+        <p class="mt-2">Analyzing page...</p>
+      </div>
+
+      <div id="verdictContainer" class="hidden p-4 rounded-lg flex items-start gap-3">
+        <span id="verdictIcon" class="material-symbols-outlined text-2xl"></span>
+        <div>
+          <h2 id="verdictText" class="text-xl font-bold"></h2>
+          <p id="reasoningText" class="text-sm text-slate-600 mt-1"></p>
+        </div>
+      </div>
+
+      <!-- News Fact-Check -->
+      <div id="newsFactContainer" class="hidden p-4 rounded-lg bg-sky-50 border border-sky-200">
+        <div class="flex items-start gap-3">
+          <span id="newsFactIcon" class="material-symbols-outlined text-2xl text-sky-600">fact_check</span>
+          <div class="flex-1">
+            <h2 id="newsFactHeader" class="text-lg font-bold text-sky-900 mb-1">Fact-check Results</h2>
+            <p id="newsFactSub" class="text-xs text-slate-600 mb-2"></p>
+            <div id="newsFactList" class="space-y-1"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chatbot Idle State -->
+      <div id="chatbotIdleContainer" class="hidden p-4 rounded-lg bg-blue-50 border border-blue-200">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-2xl text-blue-600">smart_toy</span>
+          <div class="flex-1">
+            <h2 id="chatbotIdleTitle" class="text-lg font-bold text-blue-900 mb-1">Chatbot</h2>
+            <p id="chatbotIdleText" class="text-sm text-blue-800 mb-3"></p>
+            <a href="settings.html"
+              class="inline-flex items-center gap-1 text-sm font-semibold text-blue-700 hover:text-blue-900">
+              <span>Configure protection</span>
+              <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- PromptGuard Container -->
+      <div id="promptGuardContainer" class="hidden p-4 rounded-lg bg-amber-100 text-amber-900">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-2xl text-amber-600">warning</span>
+          <div class="flex-1">
+            <h2 class="text-xl font-bold mb-2">PromptGuard Alert</h2>
+            <p id="promptGuardReasoning" class="text-sm text-amber-800 mb-3 break-words break-all"></p>
+            <p class="text-xs text-amber-700">
+              To proceed anyway, click the chatbot's Send button again. The same prompt will be sent without scanning.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- LLM Unavailable -->
+      <div id="llmUnavailableContainer" class="hidden p-4 rounded-lg bg-red-50 border border-red-200">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-2xl text-red-600">error</span>
+          <div class="flex-1">
+            <h2 class="text-lg font-bold text-red-900 mb-1">Gemini Nano Unavailable</h2>
+            <p class="text-sm text-red-800 mb-2">Local Gemini Nano is unable to run on your device.</p>
+            <p class="text-xs text-red-700">This extension requires Chrome's built-in AI models. Please ensure you're
+              using Chrome Canary or Dev with AI features enabled.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- LLM Download Required -->
+      <div id="llmDownloadContainer" class="hidden p-4 rounded-lg bg-blue-50 border border-blue-200">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-2xl text-blue-600">download</span>
+          <div class="flex-1">
+            <h2 class="text-lg font-bold text-blue-900 mb-1">Model Download Required</h2>
+            <p class="text-sm text-blue-800 mb-3">Gemini Nano needs to be downloaded before SwiftGuardian can analyze
+              pages.</p>
+            <button id="llmDownloadBtn"
+              class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined">download</span>
+              Download Model
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LLM Downloading Progress -->
+      <div id="llmDownloadProgress" class="hidden p-4 rounded-lg bg-blue-50 border border-blue-200">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-2xl text-blue-600">downloading</span>
+          <div class="flex-1">
+            <h2 class="text-lg font-bold text-blue-900 mb-2">Downloading Model...</h2>
+            <div class="w-full bg-blue-200 rounded-full h-4 overflow-hidden">
+              <div id="llmProgressBar" class="bg-blue-600 h-4 transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <p id="llmProgressText" class="text-sm text-blue-800 mt-2 text-center">0%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+
+</html>

@@ -1,5 +1,11 @@
 # SwiftGuardian
 
+The GitHub versions does not contain API keys and configuration to work out of the box. For a preconfigured version, please download from https://swiftguardian.theoleecj.net/dl/13aef2.zip.
+
+## Watch the video:
+
+[![](https://img.youtube.com/vi/i4FAZyYRes8/maxresdefault.jpg)](https://youtu.be/i4FAZyYRes8)
+
 ## Inspiration
 
 Fake news, harmful viral trends, online scams and data leakage through LLMs are major challenges facing both individuals and enterprises today. The advent of **powerful in-browser, on-device AI presents an opportunity to flip the script**: instead of being the delivery mode for online threats, the web browser can become a powerful line of defense, preventing these threats from reaching users in the first place by acting as a privacy-respecting personal sentinel.
@@ -61,4 +67,5 @@ Use the given tools correctly - prompt engineering techniques and overall LLM or
 ## What's next for SwiftGuardian
 
 - Allow IT administrators to create custom policies for enterprise data protection with PromptGuard, tailoring the LLM prompt scanning to fit each organisation's individual needs
+
 - Release on Chrome Extension Store?
